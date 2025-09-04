@@ -1,64 +1,39 @@
 package com.billquote.entity;
 
+import lombok.Getter;
+import lombok.Setter;
+import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
+import org.springframework.data.mongodb.core.mapping.FieldType;
+
+import java.math.BigDecimal;
+import java.time.Instant;
 
 @Document(collection = "devis")
+@Getter
+@Setter
 public class Devis {
 
     @Id
-    private String idDevis;
+    private String idDevis;            // ObjectId sous forme de String (ok pour Mongo)
+
+    @Indexed                     // utile pour chercher par titre
     private String titre;
-    private double montant;
-    private String dateCreation;
+
+    @Field(targetType = FieldType.DECIMAL128)   // évite les erreurs d’arrondi (double)
+    private BigDecimal montant;
+
+    @CreatedDate                 // auto-rempli par Mongo Auditing
+    private Instant dateCreation;
+
+    @LastModifiedDate            // auto-maj
+    private Instant dateMaj;
+
+    // références “logiques” (pas de @DBRef vers MySQL)
     private String idUtilisateur;
     private String idSociete;
-
-    public String getIdDevis() {
-        return idDevis;
-    }
-
-    public void setIdDevis(String idDevis) {
-        this.idDevis = idDevis;
-    }
-
-    public String getTitre() {
-        return titre;
-    }
-
-    public void setTitre(String titre) {
-        this.titre = titre;
-    }
-
-    public double getMontant() {
-        return montant;
-    }
-
-    public void setMontant(double montant) {
-        this.montant = montant;
-    }
-
-    public String getDateCreation() {
-        return dateCreation;
-    }
-
-    public void setDateCreation(String dateCreation) {
-        this.dateCreation = dateCreation;
-    }
-
-    public String getIdUtilisateur() {
-        return idUtilisateur;
-    }
-
-    public void setIdUtilisateur(String idUtilisateur) {
-        this.idUtilisateur = idUtilisateur;
-    }
-
-    public String getIdSociete() {
-        return idSociete;
-    }
-
-    public void setIdSociete(String idSociete) {
-        this.idSociete = idSociete;
-    }
 }

@@ -2,22 +2,29 @@ package com.billquote.controller;
 
 import com.billquote.dto.DevisDTO;
 import com.billquote.service.DevisService;
-import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/devis")
+@RequiredArgsConstructor
 public class DevisController {
 
-    @Autowired
-    private DevisService devisService;
+    private final DevisService devisService; // injection par constructeur
 
     @PostMapping
-    public ResponseEntity<DevisDTO> createDevis(@RequestBody DevisDTO devisDTO) {
-        return ResponseEntity.ok(devisService.createDevis(devisDTO));
+    public ResponseEntity<DevisDTO> createDevis(@Valid @RequestBody DevisDTO devisDTO,
+                                                UriComponentsBuilder uriBuilder) {
+        DevisDTO created = devisService.createDevis(devisDTO);
+        var location = uriBuilder.path("/api/devis/{id}")
+                                 .buildAndExpand(created.getIdDevis())
+                                 .toUri();
+        return ResponseEntity.created(location).body(created); // 201 + Location
     }
 
     @GetMapping

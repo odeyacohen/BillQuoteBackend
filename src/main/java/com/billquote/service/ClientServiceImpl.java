@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ClientServiceImpl implements ClientService {
 
-    private final ClientRepository clientRepository;
+    private final ClientRepository clientRepository = null;
 
     private ClientDTO mapToDTO(Client client) {
         ClientDTO dto = new ClientDTO();

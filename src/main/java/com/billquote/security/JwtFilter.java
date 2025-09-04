@@ -12,12 +12,13 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import com.billquote.security.JwtUtil;
 
 @Component
 @RequiredArgsConstructor
 public class JwtFilter extends OncePerRequestFilter {
 
-    private final JwtUtil jwtUtil;
+    private final JwtUtil jwtUtil = new JwtUtil();
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,

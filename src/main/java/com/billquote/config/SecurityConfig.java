@@ -24,7 +24,7 @@ import org.springframework.security.*;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final JwtFilter jwtFilter;
+    private final JwtFilter jwtFilter = new JwtFilter();
 
     @Bean
     public PasswordEncoder passwordEncoder() {

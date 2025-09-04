@@ -1,7 +1,7 @@
 package com.billquote.service;
 
-import com.billquote.dto.AuthRequest;
-import com.billquote.dto.AuthResponse;
+import com.billquote.model.AuthRequest;
+import com.billquote.model.AuthResponse;
 import com.billquote.dto.RegisterRequest;
 import com.billquote.entity.Utilisateur;
 import com.billquote.repository.UtilisateurRepository;
@@ -16,10 +16,10 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
 
-    private final UtilisateurRepository utilisateurRepository;
-    private final PasswordEncoder passwordEncoder;
-    private final JwtUtil jwtUtil;
-    private final AuthenticationManager authenticationManager;
+    private final UtilisateurRepository utilisateurRepository = null;
+    private final PasswordEncoder passwordEncoder = null;
+    private final JwtUtil jwtUtil = new JwtUtil();
+    private final AuthenticationManager authenticationManager = null;
 
     @Override
     public AuthResponse register(RegisterRequest request) {

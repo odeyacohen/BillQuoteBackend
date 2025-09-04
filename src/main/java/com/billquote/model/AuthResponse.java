@@ -1,4 +1,4 @@
-package com.billquote.dto;
+package com.billquote.model;
 
 public class AuthResponse {
     private String token;

@@ -2,22 +2,31 @@ package com.billquote.controller;
 
 import com.billquote.dto.ClientDTO;
 import com.billquote.service.ClientService;
-import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/clients")
+@RequiredArgsConstructor
 public class ClientController {
 
-    @Autowired
-    private ClientService clientService;
+    private final ClientService clientService; // injection par constructeur
 
     @PostMapping
-    public ResponseEntity<ClientDTO> createClient(@RequestBody ClientDTO clientDTO) {
-        return ResponseEntity.ok(clientService.createClient(clientDTO));
+    public ResponseEntity<ClientDTO> createClient(@Valid @RequestBody ClientDTO clientDTO,
+                                                  UriComponentsBuilder uriBuilder) {
+        ClientDTO created = clientService.createClient(clientDTO);
+        // /api/clients/{id}
+        var location = uriBuilder.path("/api/clients/{id}")
+                                 .buildAndExpand(created.getId())
+                                 .toUri();
+        return ResponseEntity.created(location).body(created); // 201 + Location
     }
 
     @GetMapping
@@ -31,7 +40,8 @@ public class ClientController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ClientDTO> updateClient(@PathVariable Long id, @RequestBody ClientDTO updatedClient) {
+    public ResponseEntity<ClientDTO> updateClient(@PathVariable Long id,
+                                                  @Valid @RequestBody ClientDTO updatedClient) {
         return ResponseEntity.ok(clientService.updateClient(id, updatedClient));
     }
 

@@ -1,7 +1,7 @@
 package com.billquote.service;
 
 import com.billquote.dto.FactureDTO;
-import com.billquote.model.Facture;
+import com.billquote.model.DevisResponse;
 import com.billquote.repository.FactureRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -15,7 +15,7 @@ public class FactureServiceImpl implements FactureService {
     @Autowired
     private FactureRepository factureRepository;
 
-    private FactureDTO mapToDTO(Facture facture) {
+    private FactureDTO mapToDTO(DevisResponse facture) {
         FactureDTO dto = new FactureDTO();
         dto.setIdFacture(facture.getIdFacture());
         dto.setNumeroFacture(facture.getNumeroFacture());
@@ -25,8 +25,8 @@ public class FactureServiceImpl implements FactureService {
         return dto;
     }
 
-    private Facture mapToEntity(FactureDTO dto) {
-        Facture facture = new Facture();
+    private DevisResponse mapToEntity(FactureDTO dto) {
+        DevisResponse facture = new DevisResponse();
         facture.setIdFacture(dto.getIdFacture());
         facture.setNumeroFacture(dto.getNumeroFacture());
         facture.setDateFacture(dto.getDateFacture());

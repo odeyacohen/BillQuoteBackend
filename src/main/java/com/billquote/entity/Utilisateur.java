@@ -1,63 +1,56 @@
 package com.billquote.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
+import java.time.Instant;
 
 @Entity
-@Table(name = "utilisateur")
+@Table(
+    name = "utilisateur",
+    uniqueConstraints = {
+        @UniqueConstraint(name = "uk_utilisateur_email", columnNames = "email")
+    }
+)
+@EntityListeners(AuditingEntityListener.class)
 @Getter
 @Setter
-
+@NoArgsConstructor
 public class Utilisateur {
-	@Id
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id_utilisateur")
+    private Long id;
+
+    @Column(name = "email", nullable = false, unique = true, length = 180)
     private String email;
 
+    @Column(name = "nom", nullable = false, length = 100)
     private String nom;
+
+    @Column(name = "prenom", length = 100)
     private String prenom;
-    private String motDePasse;
+
+    @Column(name = "mot_de_passe", nullable = false, length = 255)
+    private String motDePasse;   // à stocker hashé (ex: BCrypt)
+
+    @Column(name = "tel", length = 25)
     private String tel;
-    private String role;
-    
 
-    @Override
-	public String toString() {
-		return "Utilisateur [email=" + email + ", nom=" + nom + ", prenom=" + prenom + ", motDePasse=" + motDePasse
-				+ ", tel=" + tel + ", role=" + role + "]";
-	}
-	public String getEmail() {
-		return email;
-	}
-	public void setEmail(String email) {
-		this.email = email;
-	}
-	public String getNom() {
-		return nom;
-	}
-	public void setNom(String nom) {
-		this.nom = nom;
-	}
-	public String getPrenom() {
-		return prenom;
-	}
-	public void setPrenom(String prenom) {
-		this.prenom = prenom;
-	}
-	public String getTel() {
-		return tel;
-	}
-	public void setTel(String tel) {
-		this.tel = tel;
-	}
-	public String getRole() {
-		return role;
-	}
-	public void setRole(String role) {
-		this.role = role;
-	}
-	
+    @Column(name = "role", nullable = false)
+    private boolean role = false;   // false = USER, true = ADMIN
 
+    @CreatedDate
+    @Column(name = "created_at", updatable = false, nullable = false)
+    private Instant createdAt;
+
+    @LastModifiedDate
+    @Column(name = "updated_at", nullable = false)
+    private Instant updatedAt;
 }
