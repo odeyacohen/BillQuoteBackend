@@ -1,3 +1,4 @@
+
 package com.billquote.config;
 
 public class ResourceNotFoundException extends RuntimeException {

@@ -76,8 +76,9 @@ public class SecurityConfig {
                 // FACTURES
                 // Lecture publique (comme tu l’avais déjà)
                 .requestMatchers(HttpMethod.GET, "/api/factures/**").permitAll()
-                // Création / modif / suppression de facture = utilisateur connecté
-                .requestMatchers(HttpMethod.POST, "/api/factures/**").authenticated()
+                // Création / modif / suppression de facture = utilisateur connec
+                
+                                .requestMatchers(HttpMethod.POST, "/api/factures/**").authenticated()
                 .requestMatchers(HttpMethod.PATCH, "/api/factures/**").authenticated()
                 .requestMatchers(HttpMethod.DELETE, "/api/factures/**").authenticated()
 
