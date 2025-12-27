@@ -2,6 +2,7 @@ package com.billquote.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -21,7 +22,11 @@ public class RegisterRequest {
     private String email;
 
     @NotBlank
-    @Size(min = 6, max = 255)
+    @Size(min = 12, max = 255)
+    @Pattern(
+            regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[^A-Za-z\\d]).{12,}$",
+            message = "Le mot de passe doit contenir 12 caractères min, 1 minuscule, 1 majuscule, 1 chiffre et 1 caractère spécial"
+    )
     private String motDePasse;
 
     // Infos utilisateur
@@ -49,9 +54,11 @@ public class RegisterRequest {
     @Size(max = 30)
     private String societeTel;
 
+    // (Optionnel) si tu ne l’utilises pas côté back, tu peux le supprimer
     @Size(max = 255)
     private String societeMdp;
 
     // --------- Cas EMPLOYE / COMPTABLE ---------
+    // Tu peux le garder pour compat, mais idéalement il ne doit plus être utilisé côté register
     private Long societeId;
 }
