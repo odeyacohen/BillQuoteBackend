@@ -9,10 +9,12 @@ import com.billquote.repository.SocieteRepository;
 import com.billquote.repository.UtilisateurRepository;
 import com.billquote.security.JwtUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 @RequiredArgsConstructor
@@ -27,85 +29,79 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public AuthResponse register(RegisterRequest request) {
 
-        // on garde clairement le mot de passe "brut" pour s'en servir aussi pour la société
+        // ✅ Register réservé aux SOCIETES
+        if (!"SOCIETE".equalsIgnoreCase(request.getRole())) {
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
+                    "Seule une société peut s'inscrire. Les employés/comptables sont créés par une société."
+            );
+        }
+
+        String email = request.getEmail().trim().toLowerCase();
+        if (utilisateurRepository.existsByEmail(email)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Email déjà utilisé");
+        }
+
         String rawPassword = request.getMotDePasse();
 
+        // ---- Création Société ----
+        if (request.getSocieteNom() == null || request.getSocieteNom().trim().isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Le nom de la société est obligatoire");
+        }
+
+        Societe soc = new Societe();
+        soc.setNomSoc(request.getSocieteNom());
+        soc.setMailSoc(request.getSocieteEmail());
+
+        String telSoc = (request.getSocieteTel() != null && !request.getSocieteTel().trim().isEmpty())
+                ? request.getSocieteTel()
+                : request.getTel();
+
+        soc.setTelSoc(telSoc);
+        soc.setMdpSoc(passwordEncoder.encode(rawPassword)); // optionnel si tu ne t'en sers pas
+
+        soc = societeRepository.save(soc);
+
+        // ---- Création utilisateur SOCIETE (admin) ----
         Utilisateur utilisateur = new Utilisateur();
         utilisateur.setNom(request.getNom());
         utilisateur.setPrenom(request.getPrenom());
-        utilisateur.setEmail(request.getEmail());
-        utilisateur.setMotDePasse(passwordEncoder.encode(rawPassword));   // mdp UTILISATEUR (hashé)
-        utilisateur.setRole(request.getRole());
-        utilisateur.setTel(request.getTel());                             // tel UTILISATEUR
-
-        // CAS 1 : SOCIETE
-        if ("SOCIETE".equalsIgnoreCase(request.getRole())) {
-
-            Societe soc = new Societe();
-            soc.setNomSoc(request.getSocieteNom());
-            soc.setMailSoc(request.getSocieteEmail());
-
-            // téléphone de la société :
-            // - si tu as un champ dédié societeTel, utilise-le
-            // - sinon tu peux reprendre le tel utilisateur
-            String telSoc = request.getSocieteTel() != null
-                    ? request.getSocieteTel()
-                    : request.getTel();
-            soc.setTelSoc(telSoc);
-
-            // mdp de la société : même base que l'utilisateur (hashé aussi)
-            soc.setMdpSoc(passwordEncoder.encode(rawPassword));
-
-            // si tu as l'adresse :
-            // Adresse adr = ...
-            // soc.setAdresse(adr);
-
-            soc = societeRepository.save(soc);
-
-            // lie l'utilisateur à la société créée
-            utilisateur.setSociete(soc);
-        }
-
-        // CAS 2 : EMPLOYE / COMPTABLE
-        else if ("EMPLOYE".equalsIgnoreCase(request.getRole())
-              || "COMPTABLE".equalsIgnoreCase(request.getRole())) {
-
-            Societe soc = societeRepository.findById(request.getSocieteId())
-                    .orElseThrow(() -> new RuntimeException("Société introuvable"));
-            utilisateur.setSociete(soc);
-        }
+        utilisateur.setEmail(email);
+        utilisateur.setMotDePasse(passwordEncoder.encode(rawPassword));
+        utilisateur.setRole("SOCIETE");
+        utilisateur.setTel(request.getTel());
+        utilisateur.setSociete(soc);
 
         utilisateurRepository.save(utilisateur);
 
         String jwt = jwtUtil.generateToken(utilisateur.getEmail());
-        return new AuthResponse(jwt);
-    }
 
+        // ✅ IMPORTANT : renvoyer AUSSI le role
+        return new AuthResponse(jwt, utilisateur.getRole());
+    }
 
     @Override
     public AuthResponse login(AuthRequest request) {
+
         final String email = request.getEmail().trim().toLowerCase();
 
         try {
             authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(email, request.getMotDePasse())
+                    new UsernamePasswordAuthenticationToken(email, request.getMotDePasse())
             );
         } catch (org.springframework.security.authentication.BadCredentialsException e) {
-            throw new org.springframework.web.server.ResponseStatusException(
-                org.springframework.http.HttpStatus.UNAUTHORIZED, "Email ou mot de passe incorrect");
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Email ou mot de passe incorrect");
         } catch (org.springframework.security.authentication.DisabledException |
                  org.springframework.security.authentication.LockedException e) {
-            throw new org.springframework.web.server.ResponseStatusException(
-                org.springframework.http.HttpStatus.FORBIDDEN, e.getMessage());
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, e.getMessage());
         }
 
         Utilisateur user = utilisateurRepository.findByEmail(email)
-            .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
-                org.springframework.http.HttpStatus.NOT_FOUND, "Utilisateur introuvable"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Utilisateur introuvable"));
 
-        String jwt = jwtUtil.generateToken(user.getEmail()); // éventuellement: inclure user.getId(), user.getRole()
+        String jwt = jwtUtil.generateToken(user.getEmail());
 
-        return new AuthResponse(jwt);
+        // ✅ IMPORTANT : renvoyer AUSSI le role
+        return new AuthResponse(jwt, user.getRole());
     }
-
 }

@@ -66,12 +66,14 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 // Racine / erreurs (optionnel)
                 .requestMatchers("/", "/error", "/ping").permitAll()
+                .requestMatchers("/api/health/**").permitAll()
 
                 // Swagger en public
                 .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
 
                 // Auth en public (login, register...)
                 .requestMatchers("/auth/**", "/api/auth/**").permitAll()
+                
 
                 // FACTURES
                 // Lecture publique (comme tu l’avais déjà)
@@ -90,6 +92,14 @@ public class SecurityConfig {
 
                 // CLIENT : à adapter, ici je mets lecture publique comme tu l’avais
                 .requestMatchers(HttpMethod.GET, "/api/client/**").permitAll()
+                
+                //SOCIETE
+                .requestMatchers(HttpMethod.GET, "/api/societes/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/societe/**").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/societe/**").permitAll()
+                //.requestMatchers(HttpMethod.GET, "/api/societe/**").authenticated()
+                //.requestMatchers(HttpMethod.POST, "/api/societe/**").authenticated()
+
 
                 // Le reste de l'API doit être authentifié
                 .anyRequest().authenticated()
